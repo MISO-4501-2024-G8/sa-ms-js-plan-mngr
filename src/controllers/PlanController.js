@@ -23,6 +23,8 @@ planController.get('/plans', async (req, res) => {
     }
 });
 
+
+
 planController.get('/plans/:id', async (req, res) => { 
     try {
         const plan = await Plan.findByPk(req.params.id);
@@ -32,20 +34,42 @@ planController.get('/plans/:id', async (req, res) => {
     }
 });
 
+// planController.post('/plans', async (req, res) => {
+//     try {
+//         const plan = await Plan.create({
+//             name: req.body.name,
+//             typePlan: req.body.typePlan,
+//             startDate: req.body.startDate,
+//             endDate: req.body.endDate,
+//             value: req.body.value
+//         });
+//         res.status(201).json(plan);
+//     } catch (error) {
+//         res.status(500).json(errorHandling(error));
+//     }
+// });
+
 planController.post('/plans', async (req, res) => {
     try {
+        if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
+            const error = new Error("No se ha enviado el cuerpo de la petición");
+            error.code = constants.HTTP_STATUS_BAD_REQUEST;
+            throw error;
+        }
+        console.log('Petición de creación de plan:', JSON.stringify(req.body));
         const plan = await Plan.create({
             name: req.body.name,
             typePlan: req.body.typePlan,
             startDate: req.body.startDate,
             endDate: req.body.endDate,
             value: req.body.value
-        });
+        } = req.body);
         res.status(201).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 });
+
 
 planController.put('/plans/:id', async (req, res) => {
     try {

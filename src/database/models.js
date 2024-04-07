@@ -38,7 +38,7 @@ class Models{
     }
 
     defineDescriptionFeatures(){
-        return this.sequelize.define('description_Features', {
+        return this.sequelize.define('description_Feature', {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
