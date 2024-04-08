@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-const pathEnv = `.ENV/.env.${process.env.NODE_ENVIRONMENT}`;
+const pathEnv = `ENV/.env.${process.env.NODE_ENVIRONMENT}`;
 console.log('pathEnv:', pathEnv);
 dotenv.config({ path: pathEnv });
 
