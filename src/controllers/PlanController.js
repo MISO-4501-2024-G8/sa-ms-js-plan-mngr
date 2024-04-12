@@ -34,21 +34,6 @@ planController.get('/plans/:id', async (req, res) => {
     }
 });
 
-// planController.post('/plans', async (req, res) => {
-//     try {
-//         const plan = await Plan.create({
-//             name: req.body.name,
-//             typePlan: req.body.typePlan,
-//             startDate: req.body.startDate,
-//             endDate: req.body.endDate,
-//             value: req.body.value
-//         });
-//         res.status(201).json(plan);
-//     } catch (error) {
-//         res.status(500).json(errorHandling(error));
-//     }
-// });
-
 planController.post('/plans', async (req, res) => {
     try {
         if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
