@@ -217,6 +217,7 @@ describe('Plan Controller', () => {
 
   });
 
+  
   it('should return all plansIntermediate', async () => {
     console.log('Planes Intermedio');
     const response = await supertest(app)
