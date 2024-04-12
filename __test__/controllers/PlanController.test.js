@@ -106,5 +106,27 @@ describe('Plan Controller', () => {
   
   });
 
+  it('should create a new planIntermediate', async () => {
+    const newPlanIntermediate = {
+      id: 1,
+      monitoreoTiempoReal: true,
+      alertasRiesgo: false,
+      comunicacionEntrenador: true
+    };
+    const response = await supertest(app)
+      .post('/plans/plans/intermedio')
+      .send(newPlanIntermediate);
+    console.log('response:', response.error);
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('comunicacionEntrenador', newPlanIntermediate.comunicacionEntrenador);
+  
+  });
+
+  it('should return all plansIntermediate', async () => {
+    const response = await supertest(app).get('/plans/plans/intermedio');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
 });
 
