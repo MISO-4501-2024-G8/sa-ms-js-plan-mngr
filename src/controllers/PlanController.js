@@ -17,6 +17,7 @@ const secret = 'MISO-4501-2024-G8';
 planController.get('/plans', async (req, res) => {
     try {
         const plans = await Plan.findAll();
+        console.log('Petición de consulta de planes:', JSON.stringify(plans));
         res.status(200).json(plans);
     } catch (error) {
         res.status(500).json(errorHandling(error));
@@ -25,7 +26,7 @@ planController.get('/plans', async (req, res) => {
 
 planController.get('/plans/:id', async (req, res) => { 
     try {
-        const plan = await Plan.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         res.status(200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
@@ -56,7 +57,7 @@ planController.post('/plans', async (req, res) => {
 
 planController.put('/plans/:id', async (req, res) => {
     try {
-        const plan = await Plan.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         plan.name = req.body.name;
         plan.typePlan = req.body.typePlan;
         plan.startDate = req.body.startDate;
@@ -71,7 +72,7 @@ planController.put('/plans/:id', async (req, res) => {
 
 planController.delete('/plans/:id', async (req, res) => {
     try {
-        const plan = await Plan.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         await plan.destroy();
         res.status(200).json(plan);
     } catch (error) {
@@ -81,7 +82,8 @@ planController.delete('/plans/:id', async (req, res) => {
 
 planController.get('/plans/intermedio', async (req, res) => {
     try {
-        const plan = await PlanIntermedio.findAll();
+        const plans = await PlanIntermedio.findAll();
+        console.log('Petición de consulta de planes intermedios:', JSON.stringify(plans));
         res.status(200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
@@ -103,7 +105,7 @@ planController.post('/plans/intermedio', async (req, res) => {
 
 planController.put('/plans/intermedio/:id', async (req, res) => {
     try {
-        const plan = await PlanIntermedio.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         plan.monitoreoTiempoReal = req.body.monitoreoTiempoReal;
         plan.alertasRiesgo = req.body.alertasRiesgo;
         plan.comunicacionEntrenador = req.body.comunicacionEntrenador;
@@ -116,7 +118,7 @@ planController.put('/plans/intermedio/:id', async (req, res) => {
 
 planController.delete('/plans/intermedio/:id', async (req, res) => {
     try {
-        const plan = await PlanIntermedio.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         await plan.destroy();
         res.status(200).json(plan);
     } catch (error) {
@@ -148,7 +150,7 @@ planController.post('/plans/premium', async (req, res) => {
 
 planController.put('/plans/premium/:id', async (req, res) => {
     try {
-        const plan = await PlanPremium.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         plan.monitoreoTiempoReal = req.body.monitoreoTiempoReal;
         plan.alertasRiesgo = req.body.alertasRiesgo;
         plan.comunicacionEntrenador = req.body.comunicacionEntrenador;
@@ -161,7 +163,7 @@ planController.put('/plans/premium/:id', async (req, res) => {
 
 planController.delete('/plans/premium/:id', async (req, res) => {
     try {
-        const plan = await PlanPremium.findByPk(req.params.id);
+        const plan = await Plan.findOne({ where: { id: req.params.id } });
         await plan.destroy();
         res.status(200).json(plan);
     } catch (error) {
@@ -192,7 +194,7 @@ planController.post('/descriptionFeatures', async (req, res) => {
 
 planController.put('/descriptionFeatures/:id', async (req, res) => {
     try {
-        const descriptionFeatures = await DescriptionFeatures.findByPk(req.params.id);
+        const descriptionFeatures = DescriptionFeatures.findOne({ where: { id: req.params.id } });
         descriptionFeatures.name = req.body.name;
         descriptionFeatures.description = req.body.description;
         await descriptionFeatures.save();
@@ -204,7 +206,7 @@ planController.put('/descriptionFeatures/:id', async (req, res) => {
 
 planController.delete('/descriptionFeatures/:id', async (req, res) => {
     try {
-        const descriptionFeatures = await DescriptionFeatures.findByPk(req.params.id);
+        const descriptionFeatures = await DescriptionFeatures.findOne({ where: { id: req.params.id } });
         await descriptionFeatures.destroy();
         res.status(200).json(descriptionFeatures);
     } catch (error) {
