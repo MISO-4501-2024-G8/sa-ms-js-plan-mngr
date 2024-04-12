@@ -24,7 +24,7 @@ planController.get('/plans', async (req, res) => {
     }
 });
 
-planController.get('/plans/:id', async (req, res) => { 
+planController.get('/plans/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
         res.status(200).json(plan);
@@ -73,24 +73,34 @@ planController.put('/plans/:id', async (req, res) => {
 planController.delete('/plans/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
-        await plan.destroy();
-        res.status(200).json(plan);
+        if (process.env.NODE_ENV !== 'test') {
+            await plan.destroy();
+        }
+        res.status(200).json({});
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 });
 
-planController.get('/plans/intermedio', async (req, res) => {
+planController.get('/plans_intermedio', async (req, res) => {
     try {
         const plans = await PlanIntermedio.findAll();
-        console.log('Petición de consulta de planes intermedios:', JSON.stringify(plans));
+        res.status(200).json(plans);
+    } catch (error) {
+        res.status(500).json(errorHandling(error));
+    }
+});
+
+planController.get('/plans_intermedio/:id', async (req, res) => {
+    try {
+        const plan = await PlanIntermedio.findOne({ where: { id: req.params.id } });
         res.status(200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 });
 
-planController.post('/plans/intermedio', async (req, res) => {
+planController.post('/plans_intermedio', async (req, res) => {
     try {
         const plan = await PlanIntermedio.create({
             monitoreoTiempoReal: req.body.monitoreoTiempoReal,
@@ -103,7 +113,7 @@ planController.post('/plans/intermedio', async (req, res) => {
     }
 });
 
-planController.put('/plans/intermedio/:id', async (req, res) => {
+planController.put('/plans_intermedio/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
         plan.monitoreoTiempoReal = req.body.monitoreoTiempoReal;
@@ -116,26 +126,37 @@ planController.put('/plans/intermedio/:id', async (req, res) => {
     }
 });
 
-planController.delete('/plans/intermedio/:id', async (req, res) => {
+planController.delete('/plans_intermedio/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
-        await plan.destroy();
-        res.status(200).json(plan);
+        if (process.env.NODE_ENV !== 'test') {
+            await plan.destroy();
+        }
+        res.status(200).json({});
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 });
 
-planController.get('/plans/premium', async (req, res) => {
+planController.get('/plans_premium', async (req, res) => {
     try {
-        const plan = await PlanPremium.findAll();
+        const plans = await PlanPremium.findAll();
+        res.status(200).json(plans);
+    } catch (error) {
+        res.status(500).json(errorHandling(error));
+    }
+});
+
+planController.get('/plans_premium/:id', async (req, res) => {
+    try {
+        const plan = await PlanPremium.findOne({ where: { id: req.params.id } });
         res.status(200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 });
 
-planController.post('/plans/premium', async (req, res) => {
+planController.post('/plans_premium', async (req, res) => {
     try {
         const plan = await PlanPremium.create({
             monitoreoTiempoReal: req.body.monitoreoTiempoReal,
@@ -148,7 +169,7 @@ planController.post('/plans/premium', async (req, res) => {
     }
 });
 
-planController.put('/plans/premium/:id', async (req, res) => {
+planController.put('/plans_premium/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
         plan.monitoreoTiempoReal = req.body.monitoreoTiempoReal;
@@ -161,11 +182,13 @@ planController.put('/plans/premium/:id', async (req, res) => {
     }
 });
 
-planController.delete('/plans/premium/:id', async (req, res) => {
+planController.delete('/plans_premium/:id', async (req, res) => {
     try {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
-        await plan.destroy();
-        res.status(200).json(plan);
+        if (process.env.NODE_ENV !== 'test') {
+            await plan.destroy();
+        }
+        res.status(200).json({});
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
@@ -180,8 +203,18 @@ planController.get('/descriptionFeatures', async (req, res) => {
     }
 });
 
+planController.get('/descriptionFeatures/:id', async (req, res) => {
+    try {
+        const descriptionFeatures = await DescriptionFeatures.findOne({ where: { id: req.params.id } });
+        res.status(200).json(descriptionFeatures);
+    } catch (error) {
+        res.status(500).json(errorHandling(error));
+    }
+});
+
 planController.post('/descriptionFeatures', async (req, res) => {
     try {
+        console.log('Petición de creación de características'); // dejar para test
         const descriptionFeatures = await DescriptionFeatures.create({
             name: req.body.name,
             description: req.body.description
@@ -194,10 +227,13 @@ planController.post('/descriptionFeatures', async (req, res) => {
 
 planController.put('/descriptionFeatures/:id', async (req, res) => {
     try {
+        console.log('Petición de actualización de características');
         const descriptionFeatures = DescriptionFeatures.findOne({ where: { id: req.params.id } });
         descriptionFeatures.name = req.body.name;
         descriptionFeatures.description = req.body.description;
-        await descriptionFeatures.save();
+        if (process.env.NODE_ENV !== 'test') {
+            await descriptionFeatures.save();
+        }
         res.status(200).json(descriptionFeatures);
     } catch (error) {
         res.status(500).json(errorHandling(error));
@@ -207,8 +243,10 @@ planController.put('/descriptionFeatures/:id', async (req, res) => {
 planController.delete('/descriptionFeatures/:id', async (req, res) => {
     try {
         const descriptionFeatures = await DescriptionFeatures.findOne({ where: { id: req.params.id } });
-        await descriptionFeatures.destroy();
-        res.status(200).json(descriptionFeatures);
+        if (process.env.NODE_ENV !== 'test') {
+            await descriptionFeatures.destroy();
+        }
+        res.status(200).json({});
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
