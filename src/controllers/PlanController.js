@@ -23,8 +23,6 @@ planController.get('/plans', async (req, res) => {
     }
 });
 
-
-
 planController.get('/plans/:id', async (req, res) => { 
     try {
         const plan = await Plan.findByPk(req.params.id);

@@ -49,7 +49,6 @@ const { v4: uuidv4 } = require('uuid');
 const exp = require("constants");
 const { setUncaughtExceptionCaptureCallback } = require("process");
 
-
 describe('Plan Controller', () => {
     let app;
 
@@ -84,4 +83,28 @@ describe('Plan Controller', () => {
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
+
+  it('should return all plansDescriptions', async () => {
+    const response = await supertest(app).get('/plans/descriptionFeatures');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('should create a new planDescription', async () => {
+    const newDescription = {
+      id: 1,
+      tipoPlan: 'Basic',
+      description: "Description1"
+    };
+    const response = await supertest(app)
+      .post('/plans/descriptionFeatures')
+      .send(newDescription);
+    console.log('response:', response.error);
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('description', newDescription.description);
+  
+  });
+
 });
+
