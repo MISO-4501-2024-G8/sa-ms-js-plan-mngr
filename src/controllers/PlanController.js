@@ -13,6 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 const { encrypt, decrypt } = require('../utils/encrypt_decrypt');
 const { errorHandling } = require('../utils/errorHandling');
 const secret = 'MISO-4501-2024-G8';
+const valor = 'res.status(500).json(errorHandling(error));'
 
 planController.get('/plans', async (req, res) => {
     try {
@@ -20,7 +21,7 @@ planController.get('/plans', async (req, res) => {
         console.log('Petición de consulta de planes:', JSON.stringify(plans));
         res.status(200).json(plans);
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        valor 
     }
 });
 
@@ -29,7 +30,7 @@ planController.get('/plans/:id', async (req, res) => {
         const plan = await Plan.findOne({ where: { id: req.params.id } });
         res.status(200).json(plan);
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        valor
     }
 });
 
