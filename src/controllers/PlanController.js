@@ -253,4 +253,3 @@ planController.delete('/descriptionFeatures/:id', async (req, res) => {
 });
 
 module.exports = planController;
-
