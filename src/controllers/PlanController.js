@@ -25,6 +25,7 @@ const findPlanById = async (Model, id) => {
 // Función auxiliar para manejar las operaciones comunes de CRUD para planes
 const handlePlanOperation = async (req, res, Model, operation) => {
     try {
+        console.log(`Petición de handlePlanOperation`);
         if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
             const error = new Error("No se ha enviado el cuerpo de la petición");
             error.code = constants.HTTP_STATUS_BAD_REQUEST;

@@ -173,7 +173,7 @@ describe('Plan Controller', () => {
 
   });
 
-  
+
   it('should return all plansIntermediate', async () => {
     console.log('Planes Intermedio');
     const response = await supertest(app)
@@ -254,6 +254,22 @@ describe('Plan Controller', () => {
     console.log('response:', response.error);
     expect(response.status).toBe(200);
     expect(response.body !== undefined).toBe(true);
+  });
+
+  it('should handle error', async () => {
+    try {
+      jest.spyOn(console, 'log').mockImplementation(() => {
+        throw new Error("Simulated error in console.log");
+      });
+      const response = await supertest(app)
+        .post('/plans/plans')
+        .send(undefined);
+      console.log('response:', response.error);
+      expect(response.status).toBe(500);
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe("Simulated error in console.log");
+    }
   });
 
 });
