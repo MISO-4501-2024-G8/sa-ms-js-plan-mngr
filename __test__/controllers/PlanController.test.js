@@ -138,6 +138,13 @@ describe('Plan Controller', () => {
     expect(response.body).toHaveProperty('name', newPlan.name);
   });
 
+  it('should delete plan by id', async () => {
+    const response = await supertest(app)
+      .delete('/plans/plans/1');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
+  });
+
   // Description Features
 
   it('should return all plansDescriptions', async () => {
@@ -154,6 +161,41 @@ describe('Plan Controller', () => {
     console.log('response.body:', response.body);
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('id', "1");
+  });
+
+  it('should create a new planDescription', async () => {
+    const newDescriptionFeatures = {
+      id: 1,
+      tipoPlan: 'Basic',
+      description: 'Descripcion del plan basico'
+    };
+    const response = await supertest(app)
+      .post('/plans/descriptionFeatures')
+      .send(newDescriptionFeatures);
+    console.log('response:', response.error);
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('description', newDescriptionFeatures.description);
+  });
+
+  it('should update planDescription by id', async () => {
+    const newDescriptionFeatures = {
+      id: 1,
+      tipoPlan: 'Basic',
+      description: 'Descripcion del plan basico actualizada'
+    };
+    const response = await supertest(app)
+      .put('/plans/descriptionFeatures/1')
+      .send(newDescriptionFeatures);
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('description', newDescriptionFeatures.description);
+  });
+
+  it('should delete planDescription by id', async () => {
+    const response = await supertest(app)
+      .delete('/plans/descriptionFeatures/1');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
   });
 
   // Plan Intermedio
@@ -209,6 +251,13 @@ describe('Plan Controller', () => {
     expect(response.body !== undefined).toBe(true);
   });
 
+  it('should delete plan intermedioby id', async () => {
+    const response = await supertest(app)
+      .delete('/plans/plans_intermedio/1');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
+  });
+
   // Plan Premium
 
   it('should create a new planPremium', async () => {
@@ -254,6 +303,13 @@ describe('Plan Controller', () => {
     console.log('response:', response.error);
     expect(response.status).toBe(200);
     expect(response.body !== undefined).toBe(true);
+  });
+
+  it('should delete plan premium by id', async () => {
+    const response = await supertest(app)
+      .delete('/plans/plans_premium/1');
+    console.log('response:', response.error);
+    expect(response.status).toBe(200);
   });
 
   it('should handle error', async () => {
