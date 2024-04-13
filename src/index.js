@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const pathEnv = `ENV/.env.${process.env.NODE_ENVIRONMENT}`;
@@ -20,6 +21,9 @@ const planController = require("./controllers/PlanController");
 
 const app = express();
 app.disable("x-powered-by");
+app.use(cors({
+    origin: '*' //NOSONAR
+}));
 app.use(express.json());
 app.use(bodyParser.json());
 
