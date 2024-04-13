@@ -25,17 +25,25 @@ const findPlanById = async (Model, id) => {
 // Función auxiliar para manejar las operaciones comunes de CRUD para planes
 const handlePlanOperation = async (req, res, Model, operation) => {
     try {
-        console.log(`Petición de handlePlanOperation`);
-        if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
-            const error = new Error("No se ha enviado el cuerpo de la petición");
-            error.code = constants.HTTP_STATUS_BAD_REQUEST;
-            throw error;
+        console.log(`Petición de handlePlanOperation para ${operation}`);
+        if (operation !== 'eliminación') {
+            if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
+                const error = new Error("No se ha enviado el cuerpo de la petición");
+                error.code = constants.HTTP_STATUS_BAD_REQUEST;
+                throw error;
+            }
+        }else{
+            if(req.params === undefined || req.params.id === undefined || req.params.id === null) {
+                const error = new Error("No se ha enviado el id de la petición");
+                error.code = constants.HTTP_STATUS_BAD_REQUEST;
+                throw error;
+            }
         }
-
         console.log(`Petición de ${operation} de plan:`, JSON.stringify(req.body));
-
         let plan;
         if (operation === 'creación') {
+            const idModel = uuidv4().split('-')[0];
+            req.body.id = idModel;
             plan = await Model.create(req.body);
         } else if (operation === 'actualización') {
             plan = await findPlanById(Model, req.params.id);
@@ -138,15 +146,15 @@ planController.get('/descriptionFeatures/:id', async (req, res) => {
 });
 
 planController.post('/descriptionFeatures', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'creación');
+    await handlePlanOperation(req, res, DescriptionFeatures, 'creación');
 });
 
 planController.put('/descriptionFeatures/:id', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'actualización');
+    await handlePlanOperation(req, res, DescriptionFeatures,'actualización');
 });
 
 planController.delete('/descriptionFeatures/:id', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'eliminación');
+    await handlePlanOperation(req, res, DescriptionFeatures,'eliminación');
 });
 
 
