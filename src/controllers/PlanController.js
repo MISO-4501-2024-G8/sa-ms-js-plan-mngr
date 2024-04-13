@@ -56,10 +56,7 @@ const handlePlanOperation = async (req, res, Model, operation) => {
             if (process.env.NODE_ENV !== 'test') {
                 await plan.destroy();
             }
-        } else {
-            plan = await findPlanById(Model, req.params.id);
         }
-
         res.status(operation === 'creación' ? 201 : 200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
