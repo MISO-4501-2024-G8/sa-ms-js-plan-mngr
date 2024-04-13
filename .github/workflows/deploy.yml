@@ -1,4 +1,4 @@
-name: Deploy MS Calendar Mngr
+name: Deploy MS Plan Mngr
 
 on:
   push:
