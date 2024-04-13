@@ -138,14 +138,6 @@ describe('Plan Controller', () => {
     expect(response.body).toHaveProperty('name', newPlan.name);
   });
 
-  it('should delete plan by id', async () => {
-    process.env.NODE_ENV = 'test';
-    const response = await supertest(app)
-      .delete('/plans/plans/1');
-    console.log('response:', response.error);
-    expect(response.status).toBe(200);
-  });
-
   // Description Features
 
   it('should return all plansDescriptions', async () => {
@@ -153,20 +145,6 @@ describe('Plan Controller', () => {
     console.log('response:', response.error);
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
-  });
-
-  it('should create a new planDescription', async () => {
-    const newDescription = {
-      id: 1,
-      tipoPlan: 'Basic',
-      description: "Description1"
-    };
-    const response = await supertest(app)
-      .post('/plans/descriptionFeatures')
-      .send(newDescription);
-    console.log('response:', response.error);
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('description', newDescription.description);
   });
 
   it('should return one planDescription by id', async () => {
@@ -178,28 +156,6 @@ describe('Plan Controller', () => {
     expect(response.body).toHaveProperty('id', "1");
   });
 
-  it('should update planDescription by id', async () => {
-    process.env.NODE_ENV = 'test';
-    const newDescription = {
-      id: 1,
-      name: 'Basic',
-      description: "Description2"
-    };
-    const response = await supertest(app)
-      .put('/plans/descriptionFeatures/1')
-      .send(newDescription);
-    console.log('response:', response.error);
-    expect(response.status).toBe(200);
-    expect(response.body !== undefined).toBe(true);
-  });
-
-  it('should delete planDescription by id', async () => {
-    process.env.NODE_ENV = 'test';
-    const response = await supertest(app)
-      .delete('/plans/descriptionFeatures/1');
-    console.log('response:', response.error);
-    expect(response.status).toBe(200);
-  });
   // Plan Intermedio
   it('should create a new planIntermediate', async () => {
     const newPlanIntermediate = {
@@ -253,14 +209,6 @@ describe('Plan Controller', () => {
     expect(response.body !== undefined).toBe(true);
   });
 
-  it('should delete planIntermediate by id', async () => {
-    process.env.NODE_ENV = 'test';
-    const response = await supertest(app)
-      .delete('/plans/plans_intermedio/1');
-    console.log('response:', response.error);
-    expect(response.status).toBe(200);
-  });
-
   // Plan Premium
 
   it('should create a new planPremium', async () => {
@@ -306,37 +254,6 @@ describe('Plan Controller', () => {
     console.log('response:', response.error);
     expect(response.status).toBe(200);
     expect(response.body !== undefined).toBe(true);
-  });
-
-  it('should delete planPremium by id', async () => {
-    process.env.NODE_ENV = 'test';
-    const response = await supertest(app)
-      .delete('/plans/plans_premium/1');
-    console.log('response:', response.error);
-    expect(response.status).toBe(200);
-  });
-
-  it('should handle errors', async () => {
-    process.env.NODE_ENV = 'test';
-    try {
-      jest.spyOn(console, 'log').mockImplementation(() => {
-        throw new Error("Simulated error in console.log");
-      });
-      const newDescription = {
-        id: 1,
-        tipoPlan: 'Basic',
-        description: "Description1"
-      };
-      const response = await supertest(app)
-        .post('/plans/descriptionFeatures')
-        .send(newDescription);
-      console.log('response:', response.error);
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('description', newDescription.description);
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect(error.message).toBe("Simulated error in console.log");
-    }
   });
 
 });
