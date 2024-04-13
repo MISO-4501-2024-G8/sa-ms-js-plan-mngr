@@ -24,7 +24,7 @@
                 },
                 {
                     "name": "DB_DATABASE",
-                    "value": "db_user"
+                    "value": "db_plan"
                 },
                 {
                     "name": "DB_PASSWORD",
