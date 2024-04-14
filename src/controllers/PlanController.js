@@ -1,10 +1,9 @@
 const express = require("express");
 const { constants } = require('http2');
 const Database = require("../database/data");
-const jwt = require('jsonwebtoken');
 const { encrypt, decrypt } = require('../utils/encrypt_decrypt');
+const { checkToken } = require('../utils/checkToken');
 const { errorHandling } = require('../utils/errorHandling');
-const secret = 'MISO-4501-2024-G8';
 
 const db = new Database();
 const Plan = db.models.definePlan();
@@ -22,49 +21,72 @@ const findPlanById = async (Model, id) => {
     return await Model.findOne({ where: { id } });
 };
 
-// Función auxiliar para manejar las operaciones comunes de CRUD para planes
-const handlePlanOperation = async (req, res, Model, operation) => {
-    try {
-        console.log(`Petición de handlePlanOperation`);
+const checkRequest = (req, operation) => {
+    if (operation !== 'eliminación') {
         if (req.body === undefined || req.body === null || Object.keys(req.body).length === 0) {
             const error = new Error("No se ha enviado el cuerpo de la petición");
             error.code = constants.HTTP_STATUS_BAD_REQUEST;
             throw error;
         }
+    } else if (req.params === undefined || req.params.id === undefined || req.params.id === null || req.params.id === 'undefined') {
+        const error = new Error("No se ha enviado el id de la petición");
+        error.code = constants.HTTP_STATUS_BAD_REQUEST;
+        throw error;
+    }
+};
 
-        console.log(`Petición de ${operation} de plan:`, JSON.stringify(req.body));
-
-        let plan;
-        if (operation === 'creación') {
-            plan = await Model.create(req.body);
-        } else if (operation === 'actualización') {
-            plan = await findPlanById(Model, req.params.id);
-            plan.set(req.body);
-            await plan.save();
-        } else if (operation === 'eliminación') {
-            plan = await findPlanById(Model, req.params.id);
-            if (process.env.NODE_ENV !== 'test') {
-                await plan.destroy();
+// Función auxiliar para manejar las operaciones comunes de CRUD para planes
+const handlePlanOperation = async (req, res, Model, operation) => {
+    try {
+        const isToken = await checkToken(req, res);
+        if (isToken === '') {
+            console.log(`Petición de handlePlanOperation para ${operation}`);
+            checkRequest(req, operation);
+            console.log(`Petición de ${operation} de plan:`, JSON.stringify(req.body));
+            let plan;
+            if (operation === 'creación') {
+                const idModel = uuidv4().split('-')[0];
+                req.body.id = idModel;
+                plan = await Model.create(req.body);
+            } else if (operation === 'actualización') {
+                plan = await findPlanById(Model, req.params.id);
+                plan.set(req.body);
+                await plan.save();
+            } else if (operation === 'eliminación') {
+                plan = await findPlanById(Model, req.params.id);
+                if (process.env.NODE_ENV !== 'test') {
+                    await plan.destroy();
+                }
             }
+            res.status(operation === 'creación' ? 201 : 200).json(plan);
         } else {
-            plan = await findPlanById(Model, req.params.id);
+            res.status(401).json({ error: isToken, code: 401 });
         }
-
-        res.status(operation === 'creación' ? 201 : 200).json(plan);
     } catch (error) {
         res.status(500).json(errorHandling(error));
     }
 };
 
+
 // Rutas para los planes
 planController.get('/plans', async (req, res) => {
-    const plans = await Plan.findAll();
-    res.status(200).json(plans);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plans = await Plan.findAll();
+        res.status(200).json(plans);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.get('/plans/:id', async (req, res) => {
-    const plan = await findPlanById(Plan, req.params.id);
-    res.status(200).json(plan);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plan = await findPlanById(Plan, req.params.id);
+        res.status(200).json(plan);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.post('/plans', async (req, res) => {
@@ -81,13 +103,23 @@ planController.delete('/plans/:id', async (req, res) => {
 
 // Rutas para los planes intermedios
 planController.get('/plans_intermedio', async (req, res) => {
-    const plans = await PlanIntermedio.findAll();
-    res.status(200).json(plans);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plans = await PlanIntermedio.findAll();
+        res.status(200).json(plans);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.get('/plans_intermedio/:id', async (req, res) => {
-    const plan = await findPlanById(PlanIntermedio, req.params.id);
-    res.status(200).json(plan);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plan = await findPlanById(PlanIntermedio, req.params.id);
+        res.status(200).json(plan);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.post('/plans_intermedio', async (req, res) => {
@@ -105,13 +137,23 @@ planController.delete('/plans_intermedio/:id', async (req, res) => {
 
 // Rutas para los planes premium
 planController.get('/plans_premium', async (req, res) => {
-    const plans = await PlanPremium.findAll();
-    res.status(200).json(plans);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plans = await PlanPremium.findAll();
+        res.status(200).json(plans);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.get('/plans_premium/:id', async (req, res) => {
-    const plan = await findPlanById(PlanPremium, req.params.id);
-    res.status(200).json(plan);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const plan = await findPlanById(PlanPremium, req.params.id);
+        res.status(200).json(plan);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.post('/plans_premium', async (req, res) => {
@@ -128,25 +170,35 @@ planController.delete('/plans_premium/:id', async (req, res) => {
 
 // Rutas para las características de descripción
 planController.get('/descriptionFeatures', async (req, res) => {
-    const descriptionFeatures = await DescriptionFeatures.findAll();
-    res.status(200).json(descriptionFeatures);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const descriptionFeatures = await DescriptionFeatures.findAll();
+        res.status(200).json(descriptionFeatures);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.get('/descriptionFeatures/:id', async (req, res) => {
-    const descriptionFeature = await findPlanById(DescriptionFeatures, req.params.id);
-    res.status(200).json(descriptionFeature);
+    const isToken = await checkToken(req, res);
+    if (isToken === '') {
+        const descriptionFeature = await findPlanById(DescriptionFeatures, req.params.id);
+        res.status(200).json(descriptionFeature);
+    } else {
+        res.status(401).json({ error: isToken, code: 401 });
+    }
 });
 
 planController.post('/descriptionFeatures', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'creación');
+    await handlePlanOperation(req, res, DescriptionFeatures, 'creación');
 });
 
 planController.put('/descriptionFeatures/:id', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'actualización');
+    await handlePlanOperation(req, res, DescriptionFeatures, 'actualización');
 });
 
 planController.delete('/descriptionFeatures/:id', async (req, res) => {
-    await handleDescriptionFeatureOperation(req, res, 'eliminación');
+    await handlePlanOperation(req, res, DescriptionFeatures, 'eliminación');
 });
 
 
