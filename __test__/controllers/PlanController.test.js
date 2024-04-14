@@ -57,6 +57,9 @@ const jwt = require('jsonwebtoken');
 jest.mock("jsonwebtoken", () => ({
   sign: jest.fn(() => "mocked-token")
 }));
+jest.mock('../../src/utils/checkToken', () => ({
+  checkToken: jest.fn(() => '')
+}));
 const Database = require("../../src/database/data");
 const planController = require("../../src/controllers/PlanController");
 const { v4: uuidv4 } = require('uuid');
