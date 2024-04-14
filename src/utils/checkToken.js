@@ -4,20 +4,12 @@ const secret = 'MISO-4501-2024-G8';
 
 const checkToken = async (req, res) => {
     try {
-        console.log('req.headers:', req.headers);
         const auth = req.headers['authorization'];
         if (!auth) {
             return 'No se ha enviado el token de autenticación';
         }
         const token = auth.split(' ')[1];
         const payLoad = jwt.verify(token, secret)
-        console.log(payLoad);
-        const expirationDate = new Date(payLoad.exp);
-        console.log(expirationDate);
-        console.log(new Date(Date.now()));
-        console.log(Date.now());
-        console.log(payLoad.exp);
-        console.log(Date.now() > payLoad.exp);
         if (Date.now() > payLoad.exp) {
             return 'El token ha expirado';
         }

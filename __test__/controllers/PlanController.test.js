@@ -83,6 +83,7 @@ describe('Plan Controller', () => {
 
   // Plan Basico
 
+  
   it('should create a new plan', async () => {
     const newPlan = {
       id: 1,
@@ -106,6 +107,14 @@ describe('Plan Controller', () => {
       .send(undefined);
     console.log('response:', response.error);
     expect(response.status).toBe(500);
+  });
+
+  it('should generate error', async () => {
+    const response = await supertest(app)
+      .post('/plans/plans/undefined')
+      .send(undefined);
+    console.log('response:', response.error);
+    expect(response.status).toBe(404);
   });
 
   it('should return all plans', async () => {
@@ -315,6 +324,8 @@ describe('Plan Controller', () => {
     expect(response.status).toBe(200);
   });
 
+  
+
   it('should handle error', async () => {
     try {
       jest.spyOn(console, 'log').mockImplementation(() => {
@@ -329,6 +340,7 @@ describe('Plan Controller', () => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe("Simulated error in console.log");
     }
+    jest.restoreAllMocks();
   });
 
 });

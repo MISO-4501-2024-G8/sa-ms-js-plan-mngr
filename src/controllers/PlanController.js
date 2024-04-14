@@ -28,7 +28,7 @@ const checkRequest = (req, operation) => {
             error.code = constants.HTTP_STATUS_BAD_REQUEST;
             throw error;
         }
-    } else if (req.params === undefined || req.params.id === undefined || req.params.id === null) {
+    } else if (req.params === undefined || req.params.id === undefined || req.params.id === null || req.params.id === 'undefined') {
         const error = new Error("No se ha enviado el id de la petición");
         error.code = constants.HTTP_STATUS_BAD_REQUEST;
         throw error;
