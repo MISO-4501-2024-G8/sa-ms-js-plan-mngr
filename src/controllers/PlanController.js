@@ -664,10 +664,10 @@ planController.get('/allplans', async (req, res) => {
 });
 
 // obtener un plan por id
-planController.get('/allplan/:id', async (req, res) => {
+planController.get('/allplan/:tipoPlan', async (req, res) => {
     try {
-        console.log('Petición de obtener un plan por id');
-        const plan = await Plan.findOne({ where: { id: req.params.id } });
+        console.log('Petición de obtener un plan por tipoPlan');
+        const plan = await Plan.findOne({  where: { tipoPlan: req.params.tipoPlan } });
         if (plan) {
             const planInfo = await getPlanInfo(plan);
             res.status(200).json(planInfo);
