@@ -201,6 +201,10 @@ planController.delete('/descriptionFeatures/:id', async (req, res) => {
     await handlePlanOperation(req, res, DescriptionFeatures, 'eliminación');
 });
 
+/*
+SPORT APP REQUESTS
+*/
+
 
 // crear un plan basico
 planController.post('/planbasico', async (req, res) => {
@@ -521,11 +525,6 @@ planController.delete('/planbasico_premium/:id', async (req, res) => {
         res.status(500).json(errorHandling(error));
     }
 });
-
-const createPlanFeature = async (req, tipoPlan) => {
-
-    return descriptionFeature;
-};
 
 // agregar una caracteristica de descripcion a plan
 planController.post('/feature', async (req, res) => {
