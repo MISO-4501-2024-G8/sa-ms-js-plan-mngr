@@ -443,7 +443,7 @@ const handleManagerRequest = async (req, res, operation, endpoint) => {
                 await handleDeleteRequest(req, res, endpoint);
             }
         } else {
-            const error = new Error('No se ha enviado el token de autorización');
+            const error = new Error(isToken);
             error.code = constants.HTTP_STATUS_UNAUTHORIZED;
             throw error;
         }
@@ -565,7 +565,7 @@ const handleFeatureRequest = async (req, res, operation) => {
                 res.status(200).json(planFeature);
             }
         } else {
-            const error = new Error('No se ha enviado el token de autorización');
+            const error = new Error(isToken);
             error.code = constants.HTTP_STATUS_UNAUTHORIZED;
             throw error;
         }
@@ -617,11 +617,15 @@ const getPlanInfo = async (plan) => {
         const planIntermedio = await PlanIntermedio.findOne({ where: { id: plan.id } });
         let intermedioInfo = {};
         if (planIntermedio) {
-            intermedioInfo = planIntermedio.dataValues
+            intermedioInfo = {
+                monitoreoTiempoReal: planIntermedio.monitoreoTiempoReal,
+                alertasRiesgo: planIntermedio.alertasRiesgo,
+                comunicacionEntrenador: planIntermedio.comunicacionEntrenador
+            }
         }
         plan = {
             ...plan.dataValues,
-            intermedioInfo
+            ...intermedioInfo
         };
     } else if (plan.typePlan === 'premium') {
         // Buscar información del plan intermedio y agregarla al objeto de plan
@@ -629,26 +633,38 @@ const getPlanInfo = async (plan) => {
         let premiumInfo = {};
         const planIntermedio = await PlanIntermedio.findOne({ where: { id: plan.id } });
         if (planIntermedio) {
-            intermedioInfo = planIntermedio.dataValues
+            intermedioInfo = {
+                monitoreoTiempoReal: planIntermedio.monitoreoTiempoReal,
+                alertasRiesgo: planIntermedio.alertasRiesgo,
+                comunicacionEntrenador: planIntermedio.comunicacionEntrenador
+            }
         }
         // Buscar información del plan premium y agregarla al objeto de plan
         const planPremium = await PlanPremium.findOne({ where: { id: plan.id } });
         if (planPremium) {
-            premiumInfo = planPremium.dataValues
+            premiumInfo = {
+                sesionesVirtuales: planPremium.sesionesVirtuales,
+                masajes: planPremium.masajes,
+                cuidadoPosEjercicio: planPremium.cuidadoPosEjercicio
+            }
         }
         plan = {
             ...plan.dataValues,
-            intermedioInfo,
-            premiumInfo
+            ...intermedioInfo,
+            ...premiumInfo
         };
     }
     // Buscar características adicionales y agregarlas al objeto de plan
     if (plan.typePlan) {
         console.log('Obteniendo características de descripción para el plan', plan.typePlan);
         const descriptionFeatures = await getPlanFeatures(plan.typePlan);
+        const features = [];
+        for (let feature of descriptionFeatures) {
+            features.push(feature.dataValues);
+        }
         const planComplete = {
             ...plan,
-            features: descriptionFeatures
+            features: (features.map(feature => feature.description))
         };
         return planComplete;
     } else {
