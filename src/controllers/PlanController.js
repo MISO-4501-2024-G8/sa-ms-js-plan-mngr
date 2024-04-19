@@ -695,7 +695,7 @@ planController.get('/allplans', async (req, res) => {
 });
 
 // obtener un plan por id
-planController.get('/allplan/:tipoPlan', async (req, res) => {
+planController.get('/allplans/:tipoPlan', async (req, res) => {
     try {
         console.log('Petición de obtener un plan por tipoPlan');
         const plan = await Plan.findOne({ where: { typePlan: req.params.tipoPlan } });
