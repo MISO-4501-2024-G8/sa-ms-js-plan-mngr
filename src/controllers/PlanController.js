@@ -436,6 +436,18 @@ planController.put('/planbasico_premium/:id', async (req, res) => {
     }
 });
 
+const deletePlan = async (plan) => {
+    if (process.env.NODE_ENV !== 'test') {
+        const descriptionFeatures = await DescriptionFeatures.findAll({ where: { tipoPlan: plan.typePlan } });
+        for (let feature of descriptionFeatures) {
+            await feature.destroy();
+        }
+        await plan.destroy();
+    }
+    return plan;
+
+}
+
 // eliminar un plan basico
 
 planController.delete('/planbasico/:id', async (req, res) => {
@@ -450,7 +462,8 @@ planController.delete('/planbasico/:id', async (req, res) => {
                 res.status(404).json({ error: 'No se encontró el plan', code: 404 });
             }
             if (process.env.NODE_ENV !== 'test') {
-                await plan.destroy();
+                // eliminar features de descripcion del plan
+                deletePlan(plan);
             }
             res.status(200).json(plan);
         } else {
@@ -460,6 +473,7 @@ planController.delete('/planbasico/:id', async (req, res) => {
         res.status(500).json(errorHandling(error));
     }
 });
+
 
 // eliminar un plan basico-intermedio
 
@@ -476,7 +490,7 @@ planController.delete('/planbasico_intermedio/:id', async (req, res) => {
                 res.status(404).json({ error: 'No se encontró el plan intermedio', code: 404 });
             }
             if (process.env.NODE_ENV !== 'test') {
-                await plan.destroy();
+                deletePlan(plan);
                 await planIntermedio.destroy();
             }
             const planIntermedioInfo = {
@@ -508,7 +522,7 @@ planController.delete('/planbasico_premium/:id', async (req, res) => {
                 res.status(404).json({ error: 'No se encontró el plan premium', code: 404 });
             }
             if (process.env.NODE_ENV !== 'test') {
-                await plan.destroy();
+                deletePlan(plan);
                 await planIntermedio.destroy();
                 await planPremium.destroy();
             }
@@ -609,7 +623,7 @@ const getPlanFeatures = async (tipoPlan) => {
 planController.get('/features/:tipoPlan', async (req, res) => {
     try {
         console.log('Petición de obtener todas las características de descripción de un plan');
-        const features = getPlanFeatures(req.params.tipoPlan);
+        const features = await getPlanFeatures(req.params.tipoPlan);
         res.status(200).json(features);
     } catch (error) {
         res.status(500).json(errorHandling(error));
@@ -620,30 +634,51 @@ planController.get('/features/:tipoPlan', async (req, res) => {
 const getPlanInfo = async (plan) => {
     if (plan.typePlan === 'basico') {
         // No se necesita agregar información adicional para el plan básico
+        plan = { ...plan.dataValues }
     } else if (plan.typePlan === 'intermedio') {
         // Buscar información del plan intermedio y agregarla al objeto de plan
-        const planIntermedio = await PlanIntermedio.findOne({ where: { planId: plan.id } });
+        const planIntermedio = await PlanIntermedio.findOne({ where: { id: plan.id } });
+        let intermedioInfo = {};
         if (planIntermedio) {
-            plan.intermedioInfo = planIntermedio.info;
+            intermedioInfo = planIntermedio.dataValues
         }
+        plan = {
+            ...plan.dataValues,
+            intermedioInfo
+        };
     } else if (plan.typePlan === 'premium') {
         // Buscar información del plan intermedio y agregarla al objeto de plan
-        const planIntermedio = await PlanIntermedio.findOne({ where: { planId: plan.id } });
+        let intermedioInfo = {};
+        let premiumInfo = {};
+        const planIntermedio = await PlanIntermedio.findOne({ where: { id: plan.id } });
         if (planIntermedio) {
-            plan.intermedioInfo = planIntermedio.info;
+            intermedioInfo = planIntermedio.dataValues
         }
-
         // Buscar información del plan premium y agregarla al objeto de plan
-        const planPremium = await PlanPremium.findOne({ where: { planId: plan.id } });
+        const planPremium = await PlanPremium.findOne({ where: { id: plan.id } });
         if (planPremium) {
-            plan.premiumInfo = planPremium.info;
+            premiumInfo = planPremium.dataValues
         }
+        plan = {
+            ...plan.dataValues,
+            intermedioInfo,
+            premiumInfo
+        };
     }
     // Buscar características adicionales y agregarlas al objeto de plan
-    const descriptionFeatures = getPlanFeatures(plan.typePlan);
-    plan.features = descriptionFeatures.map(feature => feature.feature);
+    if (plan.typePlan) {
+        console.log('Obteniendo características de descripción para el plan', plan.typePlan);
+        const descriptionFeatures = await getPlanFeatures(plan.typePlan);
+        //console.log('Características de descripción obtenidas:', descriptionFeatures);
+        const planComplete = {
+            ...plan,
+            features: descriptionFeatures
+        };
 
-    return plan;
+        return planComplete;
+    } else {
+        return plan;
+    }
 }
 
 // obtener todos los planes
@@ -654,7 +689,7 @@ planController.get('/allplans', async (req, res) => {
         const planes = await Plan.findAll();
         const planesInfo = [];
         for (let plan of planes) {
-            planesInfo.push(getPlanInfo(plan));
+            planesInfo.push(await getPlanInfo(plan));
         }
         res.status(200).json(planesInfo);
     } catch (error) {
@@ -666,7 +701,7 @@ planController.get('/allplans', async (req, res) => {
 planController.get('/allplan/:tipoPlan', async (req, res) => {
     try {
         console.log('Petición de obtener un plan por tipoPlan');
-        const plan = await Plan.findOne({  where: { tipoPlan: req.params.tipoPlan } });
+        const plan = await Plan.findOne({ where: { typePlan: req.params.tipoPlan } });
         if (plan) {
             const planInfo = await getPlanInfo(plan);
             res.status(200).json(planInfo);
