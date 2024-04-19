@@ -519,24 +519,51 @@ planController.delete('/planbasico_premium/:id', async (req, res) => {
     await handleManagerRequest(req, res, 'eliminación', 'planbasico_premium');
 });
 
-// agregar una caracteristica de descripcion a plan
-planController.post('/feature', async (req, res) => {
+const handleFeatureRequest = async (req, res, operation) => {
     try {
         const isToken = await checkToken(req, res);
         if (isToken === '') {
-            console.log('Petición de creación de característica de descripción');
-            checkRequest(req, 'creación');
-            console.log('Petición de creación de característica de descripción:', JSON.stringify(req.body));
-            const idModel = uuidv4().split('-')[0];
-            const { tipoPlan, description } = req.body;
-            const planFeature = await DescriptionFeatures.create(
-                {
-                    id: idModel,
-                    tipoPlan,
-                    description
+            checkRequest(req, operation);
+            if (operation === 'creación') {
+                const idModel = uuidv4().split('-')[0];
+                const { tipoPlan, description } = req.body;
+                const planFeature = await DescriptionFeatures.create(
+                    {
+                        id: idModel,
+                        tipoPlan,
+                        description
+                    }
+                );
+                res.status(201).json(planFeature);
+            } else if (operation === 'actualización') {
+                let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+                if (process.env.FEATURE === 'feature') {
+                    planFeature = null
                 }
-            );
-            res.status(201).json(planFeature);
+                if (planFeature === null) {
+                    const error = new Error('No se encontró la característica de descripción para actualización');
+                    error.code = 404;
+                    throw error;
+                }
+                const { tipoPlan, description } = req.body;
+                planFeature.set({ tipoPlan, description });
+                await planFeature.save();
+                res.status(200).json(planFeature);
+            } else if (operation === 'eliminación') {
+                let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+                if (process.env.FEATURE === 'feature') {
+                    planFeature = null
+                }
+                if (planFeature === null) {
+                    const error = new Error('No se encontró la característica de descripción para eliminación');
+                    error.code = 404;
+                    throw error;
+                }
+                if (process.env.NODE_ENV !== 'test') {
+                    await planFeature.destroy();
+                }
+                res.status(200).json(planFeature);
+            }
         } else {
             const error = new Error('No se ha enviado el token de autorización');
             error.code = constants.HTTP_STATUS_UNAUTHORIZED;
@@ -546,69 +573,20 @@ planController.post('/feature', async (req, res) => {
         const { code, message } = errorHandling(error);
         res.status(code).json({ error: message, code });
     }
+}
+
+// agregar una caracteristica de descripcion a plan
+planController.post('/feature', async (req, res) => {
+    await handleFeatureRequest(req, res, 'creación');
 });
 // actualizar una caracteristica de descripcion a plan
 planController.put('/feature/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de actualización de característica de descripción');
-            checkRequest(req, 'actualización');
-            console.log('Petición de actualización de característica de descripción:', JSON.stringify(req.body));
-            let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
-            if (process.env.FEATURE === 'feature') {
-                planFeature = null
-            }
-            if (planFeature === null) {
-                const error = new Error('No se encontró la característica de descripción');
-                error.code = 404;
-                throw error;
-            }
-            const { tipoPlan, description } = req.body;
-            planFeature.set({ tipoPlan, description });
-            await planFeature.save();
-            res.status(200).json(planFeature);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleFeatureRequest(req, res, 'actualización');
 });
 
 // eliminar una caracteristica de descripcion a plan
 planController.delete('/feature/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de eliminación de característica de descripción');
-            checkRequest(req, 'eliminación');
-            console.log('Petición de eliminación de característica de descripción:', JSON.stringify(req.body));
-            let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
-            if (process.env.FEATURE === 'feature') {
-                planFeature = null
-            }
-            if (planFeature === null) {
-                const error = new Error('No se encontró la característica de descripción');
-                error.code = 404;
-                throw error;
-            }
-            if (process.env.NODE_ENV !== 'test') {
-                await planFeature.destroy();
-            }
-            res.status(200).json(planFeature);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleFeatureRequest(req, res, 'eliminación');
 });
 
 
