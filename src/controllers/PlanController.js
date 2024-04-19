@@ -348,11 +348,8 @@ const handlePutRequest = async (req, res, endpoint) => {
         await plan.save();
         planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
         await planIntermedio.save();
-        const planIntermedioInfo = {
-            plan,
-            planIntermedio
-        };
-        res.status(200).json(planIntermedioInfo);
+        const planIntermedioInfoPut = { plan, planIntermedio };
+        res.status(200).json(planIntermedioInfoPut);
     } else if (endpoint === 'planbasico_premium') {
         const plan = await findPlanById(Plan, req.params.id);
         const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
@@ -375,12 +372,8 @@ const handlePutRequest = async (req, res, endpoint) => {
         await planIntermedio.save();
         planPremium.set({ sesionesVirtuales, masajes, cuidadoPosEjercicio });
         await planPremium.save();
-        const planPremiumInfo = {
-            plan,
-            planIntermedio,
-            planPremium
-        };
-        res.status(200).json(planPremiumInfo);
+        const planPremiumInfoPut = { plan, planIntermedio, planPremium };
+        res.status(200).json(planPremiumInfoPut);
     }
 }
 
@@ -412,11 +405,8 @@ const handleDeleteRequest = async (req, res, endpoint) => {
         if (process.env.NODE_ENV !== 'test') {
             await planIntermedio.destroy();
         }
-        const planIntermedioInfo = {
-            plan,
-            planIntermedio
-        };
-        res.status(200).json(planIntermedioInfo);
+        const planIntermedioInfoDelete = { plan, planIntermedio };
+        res.status(200).json(planIntermedioInfoDelete);
     } else if (endpoint === 'planbasico_premium') {
         const plan = await findPlanById(Plan, req.params.id);
         const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
@@ -434,12 +424,8 @@ const handleDeleteRequest = async (req, res, endpoint) => {
             await planIntermedio.destroy();
             await planPremium.destroy();
         }
-        const planPremiumInfo = {
-            plan,
-            planIntermedio,
-            planPremium
-        };
-        res.status(200).json(planPremiumInfo);
+        const planPremiumInfoDelete = { plan, planIntermedio, planPremium };
+        res.status(200).json(planPremiumInfoDelete);
     }
 
 };
