@@ -417,7 +417,7 @@ describe('Plan Controller Admin', () => {
 
     it('should get a plan by id', async () => {
         const response = await supertest(app)
-            .get('/plans/allplan/1');
+            .get('/plans/allplans/1');
         console.log('response:', response.error);
         expect(response.status).toBe(200);
     });
