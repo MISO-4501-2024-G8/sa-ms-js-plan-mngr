@@ -214,6 +214,15 @@ planController.post('/planbasico', async (req, res) => {
             console.log('Petición de creación de plan básico');
             checkRequest(req, 'creación');
             console.log('Petición de creación de plan básico:', JSON.stringify(req.body));
+            let plan = await Plan.findOne({ where: { typePlan: 'basico' } });
+            if (process.env.PLAN === 'basico') {
+                plan = undefined;
+            }
+            if (plan) {
+                const error = new Error('Ya existe un plan básico');
+                error.code = 409;
+                throw error;
+            }
             const idModel = uuidv4().split('-')[0];
             const typePlan = 'basico';
             const { name, startDate, endDate, value } = req.body;
@@ -229,10 +238,13 @@ planController.post('/planbasico', async (req, res) => {
             );
             res.status(201).json(planInfo);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -245,6 +257,15 @@ planController.post('/planbasico_intermedio', async (req, res) => {
             console.log('Petición de creación de plan básico-intermedio');
             checkRequest(req, 'creación');
             console.log('Petición de creación de plan básico-intermedio:', JSON.stringify(req.body));
+            let plan = await Plan.findOne({ where: { typePlan: 'intermedio' } });
+            if (process.env.PLAN === 'intermedio') {
+                plan = undefined;
+            }
+            if (plan) {
+                const error = new Error('Ya existe un plan intermedio');
+                error.code = 409;
+                throw error;
+            }
             const idModel = uuidv4().split('-')[0];
             const typePlan = 'intermedio';
             const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
@@ -274,10 +295,13 @@ planController.post('/planbasico_intermedio', async (req, res) => {
 
             res.status(201).json(planIntermedio);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -290,6 +314,15 @@ planController.post('/planbasico_premium', async (req, res) => {
             console.log('Petición de creación de plan básico-premium');
             checkRequest(req, 'creación');
             console.log('Petición de creación de plan básico-premium:', JSON.stringify(req.body));
+            let plan = await Plan.findOne({ where: { typePlan: 'premium' } });
+            if (process.env.PLAN === 'premium') {
+                plan = undefined;
+            }
+            if (plan) {
+                const error = new Error('Ya existe un plan premium');
+                error.code = 409;
+                throw error;
+            }
             const idModel = uuidv4().split('-')[0];
             const typePlan = 'premium';
             const {
@@ -331,10 +364,13 @@ planController.post('/planbasico_premium', async (req, res) => {
 
             res.status(201).json(planPremium);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -347,19 +383,28 @@ planController.put('/planbasico/:id', async (req, res) => {
             console.log('Petición de actualización de plan básico');
             checkRequest(req, 'actualización');
             console.log('Petición de actualización de plan básico:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            if (plan === null) {
-                res.status(404).json({ error: 'No se encontró el plan', code: 404 });
+            let plan = await findPlanById(Plan, req.params.id);
+            if (process.env.PLAN === 'basico') {
+                plan.typePlan = 'basico';
+            }
+            if (plan === null || plan.typePlan !== 'basico') {
+                const error = new Error('No se encontró el plan basico');
+                error.code = 404;
+                throw error;
             }
             const { name, startDate, endDate, value } = req.body;
+
             plan.set({ name, startDate, endDate, value });
             await plan.save();
             res.status(200).json(plan);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -374,11 +419,15 @@ planController.put('/planbasico_intermedio/:id', async (req, res) => {
             console.log('Petición de actualización de plan básico-intermedio:', JSON.stringify(req.body));
             const plan = await findPlanById(Plan, req.params.id);
             const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            if (plan === null || planIntermedio === null) {
-                res.status(404).json({ error: 'No se encontró el plan intermedio', code: 404 });
+            if (process.env.PLAN === 'intermedio') {
+                plan.typePlan = 'intermedio';
+            }
+            if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
+                const error = new Error('No se encontró el plan intermedio');
+                error.code = 404;
+                throw error;
             }
             const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
-
             plan.set({ name, startDate, endDate, value });
             await plan.save();
             planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
@@ -390,10 +439,13 @@ planController.put('/planbasico_intermedio/:id', async (req, res) => {
             };
             res.status(200).json(planIntermedioInfo);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -409,8 +461,13 @@ planController.put('/planbasico_premium/:id', async (req, res) => {
             const plan = await findPlanById(Plan, req.params.id);
             const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
             const planPremium = await findPlanById(PlanPremium, req.params.id);
-            if (plan === null || planIntermedio === null || planPremium === null) {
-                res.status(404).json({ error: 'No se encontró el plan premium', code: 404 });
+            if (process.env.PLAN === 'premium') {
+                plan.typePlan = 'premium';
+            }
+            if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
+                const error = new Error('No se encontró el plan premium');
+                error.code = 404;
+                throw error;
             }
             const {
                 name, startDate, endDate, value,
@@ -429,10 +486,13 @@ planController.put('/planbasico_premium/:id', async (req, res) => {
             };
             res.status(200).json(planPremiumInfo);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -458,19 +518,24 @@ planController.delete('/planbasico/:id', async (req, res) => {
             checkRequest(req, 'eliminación');
             console.log('Petición de eliminación de plan básico:', JSON.stringify(req.body));
             const plan = await findPlanById(Plan, req.params.id);
-            if (plan === null) {
-                res.status(404).json({ error: 'No se encontró el plan', code: 404 });
+            if (process.env.PLAN === 'basico') {
+                plan.typePlan = 'basico';
             }
-            if (process.env.NODE_ENV !== 'test') {
-                // eliminar features de descripcion del plan
-                deletePlan(plan);
+            if (plan === null || plan.typePlan !== 'basico') {
+                const error = new Error('No se encontró el plan basico');
+                error.code = 404;
+                throw error;
             }
+            deletePlan(plan);
             res.status(200).json(plan);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -486,11 +551,16 @@ planController.delete('/planbasico_intermedio/:id', async (req, res) => {
             console.log('Petición de eliminación de plan básico-intermedio:', JSON.stringify(req.body));
             const plan = await findPlanById(Plan, req.params.id);
             const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            if (plan === null || planIntermedio === null) {
-                res.status(404).json({ error: 'No se encontró el plan intermedio', code: 404 });
+            if (process.env.PLAN === 'intermedio') {
+                plan.typePlan = 'intermedio';
             }
+            if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
+                const error = new Error('No se encontró el plan intermedio');
+                error.code = 404;
+                throw error;
+            }
+            deletePlan(plan);
             if (process.env.NODE_ENV !== 'test') {
-                deletePlan(plan);
                 await planIntermedio.destroy();
             }
             const planIntermedioInfo = {
@@ -499,10 +569,13 @@ planController.delete('/planbasico_intermedio/:id', async (req, res) => {
             };
             res.status(200).json(planIntermedioInfo);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -518,11 +591,16 @@ planController.delete('/planbasico_premium/:id', async (req, res) => {
             const plan = await findPlanById(Plan, req.params.id);
             const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
             const planPremium = await findPlanById(PlanPremium, req.params.id);
-            if (plan === null || planIntermedio === null || planPremium === null) {
-                res.status(404).json({ error: 'No se encontró el plan premium', code: 404 });
+            if (process.env.PLAN === 'premium') {
+                plan.typePlan = 'premium';
             }
+            if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
+                const error = new Error('No se encontró el plan premium');
+                error.code = 404;
+                throw error;
+            }
+            deletePlan(plan);
             if (process.env.NODE_ENV !== 'test') {
-                deletePlan(plan);
                 await planIntermedio.destroy();
                 await planPremium.destroy();
             }
@@ -533,10 +611,13 @@ planController.delete('/planbasico_premium/:id', async (req, res) => {
             };
             res.status(200).json(planPremiumInfo);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -559,10 +640,13 @@ planController.post('/feature', async (req, res) => {
             );
             res.status(201).json(planFeature);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 // actualizar una caracteristica de descripcion a plan
@@ -573,19 +657,27 @@ planController.put('/feature/:id', async (req, res) => {
             console.log('Petición de actualización de característica de descripción');
             checkRequest(req, 'actualización');
             console.log('Petición de actualización de característica de descripción:', JSON.stringify(req.body));
-            const planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+            let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+            if (process.env.FEATURE === 'feature') {
+                planFeature = null
+            }
             if (planFeature === null) {
-                res.status(404).json({ error: 'No se encontró la característica de descripción', code: 404 });
+                const error = new Error('No se encontró la característica de descripción');
+                error.code = 404;
+                throw error;
             }
             const { tipoPlan, description } = req.body;
             planFeature.set({ tipoPlan, description });
             await planFeature.save();
             res.status(200).json(planFeature);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -597,19 +689,27 @@ planController.delete('/feature/:id', async (req, res) => {
             console.log('Petición de eliminación de característica de descripción');
             checkRequest(req, 'eliminación');
             console.log('Petición de eliminación de característica de descripción:', JSON.stringify(req.body));
-            const planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+            let planFeature = await findPlanById(DescriptionFeatures, req.params.id);
+            if (process.env.FEATURE === 'feature') {
+                planFeature = null
+            }
             if (planFeature === null) {
-                res.status(404).json({ error: 'No se encontró la característica de descripción', code: 404 });
+                const error = new Error('No se encontró la característica de descripción');
+                error.code = 404;
+                throw error;
             }
             if (process.env.NODE_ENV !== 'test') {
                 await planFeature.destroy();
             }
             res.status(200).json(planFeature);
         } else {
-            res.status(401).json({ error: isToken, code: 401 });
+            const error = new Error('No se ha enviado el token de autorización');
+            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
+            throw error;
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -626,7 +726,8 @@ planController.get('/features/:tipoPlan', async (req, res) => {
         const features = await getPlanFeatures(req.params.tipoPlan);
         res.status(200).json(features);
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -669,12 +770,10 @@ const getPlanInfo = async (plan) => {
     if (plan.typePlan) {
         console.log('Obteniendo características de descripción para el plan', plan.typePlan);
         const descriptionFeatures = await getPlanFeatures(plan.typePlan);
-        //console.log('Características de descripción obtenidas:', descriptionFeatures);
         const planComplete = {
             ...plan,
             features: descriptionFeatures
         };
-
         return planComplete;
     } else {
         return plan;
@@ -693,7 +792,8 @@ planController.get('/allplans', async (req, res) => {
         }
         res.status(200).json(planesInfo);
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
@@ -709,7 +809,8 @@ planController.get('/allplan/:tipoPlan', async (req, res) => {
             res.status(404).json({ error: 'No se encontró el plan', code: 404 });
         }
     } catch (error) {
-        res.status(500).json(errorHandling(error));
+        const { code, message } = errorHandling(error);
+        res.status(code).json({ error: message, code });
     }
 });
 
