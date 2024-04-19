@@ -352,7 +352,7 @@ const handlePutRequest = async (req, res, endpoint) => {
         res.status(200).json(planIntermedioInfoPut);
     } else if (endpoint === 'planbasico_premium') {
         const planPut = await findPlanById(Plan, req.params.id);
-        const planIntermedioPut = await findPlanById(planIntermedioPut, req.params.id);
+        const planIntermedioPut = await findPlanById(PlanIntermedio, req.params.id);
         const planPremiumPut = await findPlanById(PlanPremium, req.params.id);
         if (process.env.PLAN === 'premium') {
             planPut.typePlan = 'premium';
