@@ -664,7 +664,12 @@ const getPlanInfo = async (plan) => {
         }
         const planComplete = {
             ...plan,
-            features: (features.map(feature => feature.description))
+            features: (features.map(feature => {
+                return {
+                    id: feature.id,
+                    feature: feature.description
+                }
+            }))
         };
         return planComplete;
     } else {
