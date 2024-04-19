@@ -205,38 +205,257 @@ planController.delete('/descriptionFeatures/:id', async (req, res) => {
 SPORT APP REQUESTS
 */
 
+const handlePostRequest = async (req, res, endpoint) => {
+    if (endpoint === 'planbasico') {
+        let plan = await Plan.findOne({ where: { typePlan: 'basico' } });
+        if (process.env.PLAN === 'basico') {
+            plan = undefined;
+        }
+        if (plan) {
+            const error = new Error('Ya existe un plan básico');
+            error.code = 409;
+            throw error;
+        }
+        const idModel = uuidv4().split('-')[0];
+        const typePlan = 'basico';
+        const { name, startDate, endDate, value } = req.body;
+        const planInfo = await Plan.create(
+            {
+                id: idModel,
+                name,
+                typePlan,
+                startDate,
+                endDate,
+                value
+            }
+        );
+        res.status(201).json(planInfo);
+    } else if (endpoint === 'planbasico_intermedio') {
+        let plan = await Plan.findOne({ where: { typePlan: 'intermedio' } });
+        if (process.env.PLAN === 'intermedio') {
+            plan = undefined;
+        }
+        if (plan) {
+            const error = new Error('Ya existe un plan intermedio');
+            error.code = 409;
+            throw error;
+        }
+        const idModel = uuidv4().split('-')[0];
+        const typePlan = 'intermedio';
+        const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
+        const planInfo = await Plan.create(
+            {
+                id: idModel,
+                name,
+                typePlan,
+                startDate,
+                endDate,
+                value
+            }
+        );
+        const planIntermedioInfo = await PlanIntermedio.create(
+            {
+                id: idModel,
+                monitoreoTiempoReal,
+                alertasRiesgo,
+                comunicacionEntrenador
+            }
+        );
+        const planIntermedio = {
+            planInfo,
+            planIntermedioInfo
+        };
+        res.status(201).json(planIntermedio);
+    } else if (endpoint === 'planbasico_premium') {
+        let plan = await Plan.findOne({ where: { typePlan: 'premium' } });
+        if (process.env.PLAN === 'premium') {
+            plan = undefined;
+        }
+        if (plan) {
+            const error = new Error('Ya existe un plan premium');
+            error.code = 409;
+            throw error;
+        }
+        const idModel = uuidv4().split('-')[0];
+        const typePlan = 'premium';
+        const {
+            name, startDate, endDate, value,
+            monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador,
+            sesionesVirtuales, masajes, cuidadoPosEjercicio } = req.body;
+        const planInfo = await Plan.create(
+            {
+                id: idModel,
+                name,
+                typePlan,
+                startDate,
+                endDate,
+                value
+            }
+        );
+        const planIntermedioInfo = await PlanIntermedio.create(
+            {
+                id: idModel,
+                monitoreoTiempoReal,
+                alertasRiesgo,
+                comunicacionEntrenador
+            });
+        const planPremiumInfo = await PlanPremium.create(
+            {
+                id: idModel,
+                sesionesVirtuales,
+                masajes,
+                cuidadoPosEjercicio
+            }
+        );
+        const planPremium = {
+            planInfo,
+            planIntermedioInfo,
+            planPremiumInfo
+        };
+        res.status(201).json(planPremium);
+    }
+};
 
-// crear un plan basico
-planController.post('/planbasico', async (req, res) => {
+const handlePutRequest = async (req, res, endpoint) => {
+    if (endpoint === 'planbasico') {
+        let plan = await findPlanById(Plan, req.params.id);
+        if (process.env.PLAN === 'basico') {
+            plan.typePlan = 'basico';
+        }
+        if (plan === null || plan.typePlan !== 'basico') {
+            const error = new Error('No se encontró el plan basico');
+            error.code = 404;
+            throw error;
+        }
+        const { name, startDate, endDate, value } = req.body;
+        plan.set({ name, startDate, endDate, value });
+        await plan.save();
+        res.status(200).json(plan);
+    }
+    else if (endpoint === 'planbasico_intermedio') {
+        const plan = await findPlanById(Plan, req.params.id);
+        const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
+        if (process.env.PLAN === 'intermedio') {
+            plan.typePlan = 'intermedio';
+        }
+        if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
+            const error = new Error('No se encontró el plan intermedio');
+            error.code = 404;
+            throw error;
+        }
+        const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
+        plan.set({ name, startDate, endDate, value });
+        await plan.save();
+        planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
+        await planIntermedio.save();
+        const planIntermedioInfo = {
+            plan,
+            planIntermedio
+        };
+        res.status(200).json(planIntermedioInfo);
+    } else if (endpoint === 'planbasico_premium') {
+        const plan = await findPlanById(Plan, req.params.id);
+        const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
+        const planPremium = await findPlanById(PlanPremium, req.params.id);
+        if (process.env.PLAN === 'premium') {
+            plan.typePlan = 'premium';
+        }
+        if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
+            const error = new Error('No se encontró el plan premium');
+            error.code = 404;
+            throw error;
+        }
+        const {
+            name, startDate, endDate, value,
+            monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador,
+            sesionesVirtuales, masajes, cuidadoPosEjercicio } = req.body;
+        plan.set({ name, startDate, endDate, value });
+        await plan.save();
+        planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
+        await planIntermedio.save();
+        planPremium.set({ sesionesVirtuales, masajes, cuidadoPosEjercicio });
+        await planPremium.save();
+        const planPremiumInfo = {
+            plan,
+            planIntermedio,
+            planPremium
+        };
+        res.status(200).json(planPremiumInfo);
+    }
+}
+
+const handleDeleteRequest = async (req, res, endpoint) => {
+    if (endpoint === 'planbasico') {
+        const plan = await findPlanById(Plan, req.params.id);
+        if (process.env.PLAN === 'basico') {
+            plan.typePlan = 'basico';
+        }
+        if (plan === null || plan.typePlan !== 'basico') {
+            const error = new Error('No se encontró el plan basico');
+            error.code = 404;
+            throw error;
+        }
+        deletePlan(plan);
+        res.status(200).json(plan);
+    } else if (endpoint === 'planbasico_intermedio') {
+        const plan = await findPlanById(Plan, req.params.id);
+        const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
+        if (process.env.PLAN === 'intermedio') {
+            plan.typePlan = 'intermedio';
+        }
+        if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
+            const error = new Error('No se encontró el plan intermedio');
+            error.code = 404;
+            throw error;
+        }
+        deletePlan(plan);
+        if (process.env.NODE_ENV !== 'test') {
+            await planIntermedio.destroy();
+        }
+        const planIntermedioInfo = {
+            plan,
+            planIntermedio
+        };
+        res.status(200).json(planIntermedioInfo);
+    } else if (endpoint === 'planbasico_premium') {
+        const plan = await findPlanById(Plan, req.params.id);
+        const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
+        const planPremium = await findPlanById(PlanPremium, req.params.id);
+        if (process.env.PLAN === 'premium') {
+            plan.typePlan = 'premium';
+        }
+        if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
+            const error = new Error('No se encontró el plan premium');
+            error.code = 404;
+            throw error;
+        }
+        deletePlan(plan);
+        if (process.env.NODE_ENV !== 'test') {
+            await planIntermedio.destroy();
+            await planPremium.destroy();
+        }
+        const planPremiumInfo = {
+            plan,
+            planIntermedio,
+            planPremium
+        };
+        res.status(200).json(planPremiumInfo);
+    }
+
+};
+
+const handleManagerRequest = async (req, res, operation, endpoint) => {
     try {
         const isToken = await checkToken(req, res);
         if (isToken === '') {
-            console.log('Petición de creación de plan básico');
-            checkRequest(req, 'creación');
-            console.log('Petición de creación de plan básico:', JSON.stringify(req.body));
-            let plan = await Plan.findOne({ where: { typePlan: 'basico' } });
-            if (process.env.PLAN === 'basico') {
-                plan = undefined;
+            checkRequest(req, operation);
+            if (operation === 'creación') {
+                await handlePostRequest(req, res, endpoint);
+            } else if (operation === 'actualización') {
+                await handlePutRequest(req, res, endpoint);
+            } else if (operation === 'eliminación') {
+                await handleDeleteRequest(req, res, endpoint);
             }
-            if (plan) {
-                const error = new Error('Ya existe un plan básico');
-                error.code = 409;
-                throw error;
-            }
-            const idModel = uuidv4().split('-')[0];
-            const typePlan = 'basico';
-            const { name, startDate, endDate, value } = req.body;
-            const planInfo = await Plan.create(
-                {
-                    id: idModel,
-                    name,
-                    typePlan,
-                    startDate,
-                    endDate,
-                    value
-                }
-            );
-            res.status(201).json(planInfo);
         } else {
             const error = new Error('No se ha enviado el token de autorización');
             error.code = constants.HTTP_STATUS_UNAUTHORIZED;
@@ -246,254 +465,41 @@ planController.post('/planbasico', async (req, res) => {
         const { code, message } = errorHandling(error);
         res.status(code).json({ error: message, code });
     }
+}
+
+// crear un plan basico
+planController.post('/planbasico', async (req, res) => {
+    await handleManagerRequest(req, res, 'creación', 'planbasico');
 });
 
 // crear un plan basico-intermedio
 
 planController.post('/planbasico_intermedio', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de creación de plan básico-intermedio');
-            checkRequest(req, 'creación');
-            console.log('Petición de creación de plan básico-intermedio:', JSON.stringify(req.body));
-            let plan = await Plan.findOne({ where: { typePlan: 'intermedio' } });
-            if (process.env.PLAN === 'intermedio') {
-                plan = undefined;
-            }
-            if (plan) {
-                const error = new Error('Ya existe un plan intermedio');
-                error.code = 409;
-                throw error;
-            }
-            const idModel = uuidv4().split('-')[0];
-            const typePlan = 'intermedio';
-            const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
-            const planInfo = await Plan.create(
-                {
-                    id: idModel,
-                    name,
-                    typePlan,
-                    startDate,
-                    endDate,
-                    value
-                }
-            );
-            const planIntermedioInfo = await PlanIntermedio.create(
-                {
-                    id: idModel,
-                    monitoreoTiempoReal,
-                    alertasRiesgo,
-                    comunicacionEntrenador
-                }
-            );
-
-            const planIntermedio = {
-                planInfo,
-                planIntermedioInfo
-            };
-
-            res.status(201).json(planIntermedio);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'creación', 'planbasico_intermedio');
 });
 
 // crear un plan basico-premium
 
 planController.post('/planbasico_premium', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de creación de plan básico-premium');
-            checkRequest(req, 'creación');
-            console.log('Petición de creación de plan básico-premium:', JSON.stringify(req.body));
-            let plan = await Plan.findOne({ where: { typePlan: 'premium' } });
-            if (process.env.PLAN === 'premium') {
-                plan = undefined;
-            }
-            if (plan) {
-                const error = new Error('Ya existe un plan premium');
-                error.code = 409;
-                throw error;
-            }
-            const idModel = uuidv4().split('-')[0];
-            const typePlan = 'premium';
-            const {
-                name, startDate, endDate, value,
-                monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador,
-                sesionesVirtuales, masajes, cuidadoPosEjercicio } = req.body;
-            const planInfo = await Plan.create(
-                {
-                    id: idModel,
-                    name,
-                    typePlan,
-                    startDate,
-                    endDate,
-                    value
-                }
-            );
-            const planIntermedioInfo = await PlanIntermedio.create(
-                {
-                    id: idModel,
-                    monitoreoTiempoReal,
-                    alertasRiesgo,
-                    comunicacionEntrenador
-                });
-
-            const planPremiumInfo = await PlanPremium.create(
-                {
-                    id: idModel,
-                    sesionesVirtuales,
-                    masajes,
-                    cuidadoPosEjercicio
-                }
-            );
-
-            const planPremium = {
-                planInfo,
-                planIntermedioInfo,
-                planPremiumInfo
-            };
-
-            res.status(201).json(planPremium);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'creación', 'planbasico_premium');
 });
 
 // actualizar un plan basico
 
 planController.put('/planbasico/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de actualización de plan básico');
-            checkRequest(req, 'actualización');
-            console.log('Petición de actualización de plan básico:', JSON.stringify(req.body));
-            let plan = await findPlanById(Plan, req.params.id);
-            if (process.env.PLAN === 'basico') {
-                plan.typePlan = 'basico';
-            }
-            if (plan === null || plan.typePlan !== 'basico') {
-                const error = new Error('No se encontró el plan basico');
-                error.code = 404;
-                throw error;
-            }
-            const { name, startDate, endDate, value } = req.body;
-
-            plan.set({ name, startDate, endDate, value });
-            await plan.save();
-            res.status(200).json(plan);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'actualización', 'planbasico');
 });
 
 // actualizar un plan basico-intermedio
 
 planController.put('/planbasico_intermedio/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de actualización de plan básico-intermedio');
-            checkRequest(req, 'actualización');
-            console.log('Petición de actualización de plan básico-intermedio:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            if (process.env.PLAN === 'intermedio') {
-                plan.typePlan = 'intermedio';
-            }
-            if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
-                const error = new Error('No se encontró el plan intermedio');
-                error.code = 404;
-                throw error;
-            }
-            const { name, startDate, endDate, value, monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador } = req.body;
-            plan.set({ name, startDate, endDate, value });
-            await plan.save();
-            planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
-            await planIntermedio.save();
-
-            const planIntermedioInfo = {
-                plan,
-                planIntermedio
-            };
-            res.status(200).json(planIntermedioInfo);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'actualización', 'planbasico_intermedio');
 });
 
 // actualizar un plan basico-premium
 
 planController.put('/planbasico_premium/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de actualización de plan básico-premium');
-            checkRequest(req, 'actualización');
-            console.log('Petición de actualización de plan básico-premium:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            const planPremium = await findPlanById(PlanPremium, req.params.id);
-            if (process.env.PLAN === 'premium') {
-                plan.typePlan = 'premium';
-            }
-            if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
-                const error = new Error('No se encontró el plan premium');
-                error.code = 404;
-                throw error;
-            }
-            const {
-                name, startDate, endDate, value,
-                monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador,
-                sesionesVirtuales, masajes, cuidadoPosEjercicio } = req.body;
-            plan.set({ name, startDate, endDate, value });
-            await plan.save();
-            planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
-            await planIntermedio.save();
-            planPremium.set({ sesionesVirtuales, masajes, cuidadoPosEjercicio });
-            await planPremium.save();
-            const planPremiumInfo = {
-                plan,
-                planIntermedio,
-                planPremium
-            };
-            res.status(200).json(planPremiumInfo);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'actualización', 'planbasico_premium');
 });
 
 const deletePlan = async (plan) => {
@@ -511,114 +517,20 @@ const deletePlan = async (plan) => {
 // eliminar un plan basico
 
 planController.delete('/planbasico/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de eliminación de plan básico');
-            checkRequest(req, 'eliminación');
-            console.log('Petición de eliminación de plan básico:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            if (process.env.PLAN === 'basico') {
-                plan.typePlan = 'basico';
-            }
-            if (plan === null || plan.typePlan !== 'basico') {
-                const error = new Error('No se encontró el plan basico');
-                error.code = 404;
-                throw error;
-            }
-            deletePlan(plan);
-            res.status(200).json(plan);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'eliminación', 'planbasico');
 });
 
 
 // eliminar un plan basico-intermedio
 
 planController.delete('/planbasico_intermedio/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de eliminación de plan básico-intermedio');
-            checkRequest(req, 'eliminación');
-            console.log('Petición de eliminación de plan básico-intermedio:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            if (process.env.PLAN === 'intermedio') {
-                plan.typePlan = 'intermedio';
-            }
-            if (plan === null || planIntermedio === null || plan.typePlan !== 'intermedio') {
-                const error = new Error('No se encontró el plan intermedio');
-                error.code = 404;
-                throw error;
-            }
-            deletePlan(plan);
-            if (process.env.NODE_ENV !== 'test') {
-                await planIntermedio.destroy();
-            }
-            const planIntermedioInfo = {
-                plan,
-                planIntermedio
-            };
-            res.status(200).json(planIntermedioInfo);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'eliminación', 'planbasico_intermedio');
 });
 
 // eliminar un plan basico-premium
 
 planController.delete('/planbasico_premium/:id', async (req, res) => {
-    try {
-        const isToken = await checkToken(req, res);
-        if (isToken === '') {
-            console.log('Petición de eliminación de plan básico-premium');
-            checkRequest(req, 'eliminación');
-            console.log('Petición de eliminación de plan básico-premium:', JSON.stringify(req.body));
-            const plan = await findPlanById(Plan, req.params.id);
-            const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-            const planPremium = await findPlanById(PlanPremium, req.params.id);
-            if (process.env.PLAN === 'premium') {
-                plan.typePlan = 'premium';
-            }
-            if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
-                const error = new Error('No se encontró el plan premium');
-                error.code = 404;
-                throw error;
-            }
-            deletePlan(plan);
-            if (process.env.NODE_ENV !== 'test') {
-                await planIntermedio.destroy();
-                await planPremium.destroy();
-            }
-            const planPremiumInfo = {
-                plan,
-                planIntermedio,
-                planPremium
-            };
-            res.status(200).json(planPremiumInfo);
-        } else {
-            const error = new Error('No se ha enviado el token de autorización');
-            error.code = constants.HTTP_STATUS_UNAUTHORIZED;
-            throw error;
-        }
-    } catch (error) {
-        const { code, message } = errorHandling(error);
-        res.status(code).json({ error: message, code });
-    }
+    await handleManagerRequest(req, res, 'eliminación', 'planbasico_premium');
 });
 
 // agregar una caracteristica de descripcion a plan
