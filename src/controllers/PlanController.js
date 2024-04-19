@@ -351,13 +351,13 @@ const handlePutRequest = async (req, res, endpoint) => {
         const planIntermedioInfoPut = { plan, planIntermedio };
         res.status(200).json(planIntermedioInfoPut);
     } else if (endpoint === 'planbasico_premium') {
-        const plan = await findPlanById(Plan, req.params.id);
-        const planIntermedio = await findPlanById(PlanIntermedio, req.params.id);
-        const planPremium = await findPlanById(PlanPremium, req.params.id);
+        const planPut = await findPlanById(Plan, req.params.id);
+        const planIntermedioPut = await findPlanById(planIntermedioPut, req.params.id);
+        const planPremiumPut = await findPlanById(PlanPremium, req.params.id);
         if (process.env.PLAN === 'premium') {
-            plan.typePlan = 'premium';
+            planPut.typePlan = 'premium';
         }
-        if (plan === null || planIntermedio === null || planPremium === null || plan.typePlan !== 'premium') {
+        if (planPut === null || planIntermedioPut === null || planPremiumPut === null || planPut.typePlan !== 'premium') {
             const error = new Error('No se encontró el plan premium');
             error.code = 404;
             throw error;
@@ -366,13 +366,13 @@ const handlePutRequest = async (req, res, endpoint) => {
             name, startDate, endDate, value,
             monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador,
             sesionesVirtuales, masajes, cuidadoPosEjercicio } = req.body;
-        plan.set({ name, startDate, endDate, value });
-        await plan.save();
-        planIntermedio.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
-        await planIntermedio.save();
-        planPremium.set({ sesionesVirtuales, masajes, cuidadoPosEjercicio });
-        await planPremium.save();
-        const planPremiumInfoPut = { plan, planIntermedio, planPremium };
+        planPut.set({ name, startDate, endDate, value });
+        await planPut.save();
+        planIntermedioPut.set({ monitoreoTiempoReal, alertasRiesgo, comunicacionEntrenador });
+        await planIntermedioPut.save();
+        planPremiumPut.set({ sesionesVirtuales, masajes, cuidadoPosEjercicio });
+        await planPremiumPut.save();
+        const planPremiumInfoPut = { planPut, planIntermedioPut, planPremiumPut };
         res.status(200).json(planPremiumInfoPut);
     }
 }
